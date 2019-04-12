@@ -1,4 +1,5 @@
 #
+.idea
 *.csv
 *.tsv
 # Compiled source #
