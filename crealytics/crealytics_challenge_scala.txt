@@ -1,0 +1,42 @@
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
+
+
+val filename="/Users/ashish/GoogleDrive/crealytics_test.csv"
+val output_filename="/Users/ashish/GoogleDrive/crealytics_test_output.csv"
+
+//create spark session
+val spark = SparkSession.builder().appName("CrealyticsChallenge").getOrCreate()
+
+//read file into a dataframe
+val df = spark.read.option("header","true").option("inferSchema","true").csv(filename) 
+
+//define a window of T=60
+val window = Window.orderBy($"time").rangeBetween(-60L, 0L)
+
+//compute derived attributes
+val outDF= df.withColumn("num_obs_in_window", sum(lit(1)).over(window)).withColumn("sum_values_in_window", sum($"value").over(window)).withColumn("min_value_in_window", min($"value").over(window)).withColumn("max_value_in_window", max($"value").over(window))
+
+//write to file
+outDF.coalesce(1).write.mode("overwrite").option("delimiter", "\t").option("header", "true").csv(output_filename)
+
+
+
+.withColumn("counter",lit(1)) //add a counter
+val T=60
+//create a dataframe from an array 
+val max_min=df.select(max("time"),min("time" )).head() 
+val max_index=max_min.getInt(0)
+val min_index=max_min.getInt(1)
+
+val tempdf=(min_index-T to max_index+1 toSeq).toDF
+
+
+val targetdf = tempdf.join(df, newdf("time") === tempdf("value") , "left_outer") 
+
+
+
+val window = Window.orderBy($"time").rangeBetween(-60L, 0L)
+
+df.withColumn("num_row_in_window", sum(lit(1)).over(window)).withColumn("sum_values_in_window", sum($"value").over(window)).withColumn("min_value", min($"value").over(window)).withColumn("max_value", max($"value").over(window)).show()

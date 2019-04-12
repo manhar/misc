@@ -1,0 +1,1 @@
+IMAPALA: Select * from tablex;
